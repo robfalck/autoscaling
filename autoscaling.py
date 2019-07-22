@@ -1,6 +1,6 @@
 import dymos as dm
 import openmdao.api as om
-from new_pjrn import PJRNScaler
+from pjrn import PJRNScaler
 
 
 def autoscale(prob, jac, lbs, ubs):
