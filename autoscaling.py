@@ -1,130 +1,57 @@
 import dymos as dm
 import openmdao.api as om
-
-
-class PJRNScaler(object):
-    def __init__(self, jac, lbs, ubs):
-        # Get full names of vars, defect cons, path cons
-        full_vnames = self._parse_full_vnames_from(jac)
-        full_fnames = self._parse_full_fnames_from(jac)
-        full_gnames = self._parse_full_gnames_from(jac)
-
-        # Compute components of inverses of diagonal matrices Kv, Kf, Kg
-        Kv_inv = self._compute_Kv_inv(lbs, ubs)
-        Kf_inv = self._compute_Kf_inv(full_fnames, jac, full_vnames, Kv_inv)
-        Kg_inv = self._compute_Kg_inv(full_gnames, jac, full_vnames, Kv_inv)
-
-        # Get refs, defect_refs from Kv, Kf, Kg inverses.
-        self.refs = {}
-        self.ref0s = {}
-        for name in Kv_inv:
-            self.refs[name] = ubs[name]
-            self.ref0s[name] = lbs[name]
-        for name in Kg_inv:
-            self.refs[name] = Kg_inv[name]
-
-        self.defect_refs = {}
-        for name in Kf_inv:
-            self.defect_refs[name] = Kf_inv[name]
-
-    @staticmethod
-    def _compute_Kv_inv(lbs, ubs):
-        Kv_inv = {}
-
-        # pre: keys for lbs and ubs are the same and correspond with
-        # relevant states, ctrls
-        for vname in lbs:
-            Kv_inv[vname] = ubs[vname] - lbs[vname]
-
-        return Kv_inv
-
-    @staticmethod
-    def _compute_Kf_inv(F_names, jac, V_names, Kv_inv):
-        Kf_inv = {}
-
-        for fw in F_names:
-            short_fw = fw.split(':')[-1]
-            Kf_inv[short_fw] = []
-            nn = len(jac[fw, V_names[0]])
-            for nd in range(nn):
-                norm = 0
-                for v in V_names:
-                    short_v = v.split(':')[-1].split('.')[-1]
-                    subrow = jac[fw, v][nd]
-                    sum = 0
-                    for el in subrow:
-                        sum += el * el
-                    norm += sum * Kv_inv[short_v] ** 2
-                norm = norm ** 0.5
-                Kf_inv[short_fw].append(norm)
-
-        return Kf_inv
-
-    @staticmethod
-    def _compute_Kg_inv(G_names, jac, V_names, Kv_inv):
-        Kg_inv = {}
-
-        for g in G_names:
-            short_g = g.split(':')[-1]
-            Kg_inv[short_g] = []
-            nn = len(jac[g, V_names[0]])
-            for nd in range(nn):
-                norm = 0
-                for v in V_names:
-                    short_v = v.split(':')[-1].split('.')[-1]
-                    subrow = jac[g, v][nd]
-                    sum = 0
-                    for el in subrow:
-                        sum += el * el
-                    norm += sum * Kv_inv[short_v] ** 2
-                norm = norm ** 0.5
-                Kg_inv[short_g].append(norm)
-
-        return Kg_inv
-
-    @staticmethod
-    def _parse_full_fnames_from(jac):
-        full_fnames = []
-
-        fnrawdict = {}
-        for of, _ in jac:
-            fnrawdict[of] = None
-
-        fnrawlist = list(fnrawdict.keys())
-        for fnraw in fnrawlist:
-            if '.defects:' in fnraw:
-                full_fnames.append(fnraw)
-
-        return full_fnames
-
-    @staticmethod
-    def _parse_full_gnames_from(jac):
-        full_gnames = []
-
-        gnrawdict = {}
-        for of, _ in jac:
-            gnrawdict[of] = None
-
-        gnrawlist = list(gnrawdict.keys())
-        for gnraw in gnrawlist:
-            if '.path:' in gnraw:
-                full_gnames.append(gnraw)
-
-        return full_gnames
-
-    @staticmethod
-    def _parse_full_vnames_from(jac):
-        vnrawdict = {}
-        for _, wrt in jac:
-            vnrawdict[wrt] = None
-
-        return list(vnrawdict)
+from new_pjrn import PJRNScaler
 
 
 def autoscale(prob, jac, lbs, ubs):
     pjrn = PJRNScaler(jac, lbs, ubs)
     set_refs(prob.model, pjrn)
     prob.setup()
+
+
+def get_refs(phase, pjrn):
+    refs = {}
+    for key in pjrn.refs:
+        if is_vname(key):
+            short_key = key.split(':')[-1].split('.')[-1]
+            refs[short_key] = pjrn.refs[key]
+        elif is_gname(key):
+            short_key = key.split(':')[-1]
+            refs[short_key] = pjrn.refs[key]
+    return refs
+
+
+def get_ref0s(phase, pjrn):
+    ref0s = {}
+    for key in pjrn.ref0s:
+        if is_vname(key):
+            short_key = key.split(':')[-1].split('.')[-1]
+            ref0s[short_key] = pjrn.ref0s[key]
+        elif is_gname(key):
+            short_key = key.split(':')[-1]
+            ref0s[short_key] = pjrn.ref0s[key]
+    return ref0s
+
+
+def get_defect_refs(phase, pjrn):
+    defect_refs = {}
+    for key in pjrn.defect_refs:
+        if is_fname(key):
+            short_key = key.split(':')[-1]
+            defect_refs[short_key] = pjrn.defect_refs[key]
+    return defect_refs
+
+
+def is_fname(key):
+    return PJRNScaler._is_fname(key)
+
+
+def is_gname(key):
+    return PJRNScaler._is_gname(key)
+
+
+def is_vname(key):
+    return not is_fname(key) and not is_gname(key)
 
 
 def set_refs(sys, pjrn):
@@ -141,9 +68,9 @@ def set_phase_refs(phase, pjrn):
     ctrls = phase.control_options.keys()
 
     # Get refs, ref0s, defect_refs for phase
-    refs = pjrn.refs
-    ref0s = pjrn.ref0s
-    defect_refs = pjrn.defect_refs
+    refs = get_refs(phase, pjrn)
+    ref0s = get_ref0s(phase, pjrn)
+    defect_refs = get_defect_refs(phase, pjrn)
 
     # Set refs for...
     # Time
