@@ -2,7 +2,7 @@ from brach import BrachODE
 import dymos as dm
 import openmdao.api as om
 import pickle
-from autoscaling import autoscale
+from autoscaling.autoscaling import autoscale
 
 x_f = 100      # value for x_f; assumed to equal x_f from previous solve
 

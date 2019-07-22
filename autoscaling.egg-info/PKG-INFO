@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: autoscaling
+Version: 0.1
+Summary: Automatic scaling tools for OpenMDAO and Dymos
+Home-page: https://github.com/hweyandtnasa/autoscaling.git
+Author: Harvey Weyandt
+Author-email: harvey.weyandt@nasa.gov
+License: MIT
+Description-Content-Type: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
