@@ -53,6 +53,8 @@ def main():
 
     prob.run_driver()
 
+    return phase
+
 
 if __name__ == '__main__':
     main()

@@ -42,8 +42,6 @@ class PJRNScaler(object):
 
     @staticmethod
     def _compute_Kv_inv(lbs, ubs):
-        # pre: lbs,ubs keys are same and correspond w relevant states, ctrls.
-        # pre: keys are fully_qualified var names
         return {v: ubs[v] - lbs[v] for v in ubs}
 
     @staticmethod
@@ -53,6 +51,14 @@ class PJRNScaler(object):
     @staticmethod
     def _is_gname(name):
         return '.path:' in name
+
+    @staticmethod
+    def _is_state(name):
+        return '.states:' in name
+
+    @staticmethod
+    def _is_ctrl(name):
+        return '.controls:' in name
 
     @staticmethod
     def _parse_fnames(jac):

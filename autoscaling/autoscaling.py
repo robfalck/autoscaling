@@ -9,68 +9,76 @@ def autoscale(prob, jac, lbs, ubs):
     prob.setup()
 
 
-def get_refs(phase, pjrn):
+def get_refs(phase, sc):
     refs = {}
-    for key in pjrn.refs:
-        if is_vname(key):
-            short_key = key.split(':')[-1].split('.')[-1]
-            refs[short_key] = pjrn.refs[key]
-        elif is_gname(key):
-            short_key = key.split(':')[-1]
-            refs[short_key] = pjrn.refs[key]
+    for glob_name in sc.refs:
+        assert(is_vname(glob_name) or is_gname(glob_name))
+        if name_is_in_phase(glob_name, phase):
+            loc_name = get_loc_name(glob_name, phase)
+            assert(loc_name not in refs)
+            refs[loc_name] = sc.refs[glob_name]
     return refs
 
 
-def get_ref0s(phase, pjrn):
+def get_ref0s(phase, sc):
     ref0s = {}
-    for key in pjrn.ref0s:
-        if is_vname(key):
-            short_key = key.split(':')[-1].split('.')[-1]
-            ref0s[short_key] = pjrn.ref0s[key]
-        elif is_gname(key):
-            short_key = key.split(':')[-1]
-            ref0s[short_key] = pjrn.ref0s[key]
+    for glob_name in sc.ref0s:
+        assert(is_vname(glob_name) or is_gname(glob_name))
+        if name_is_in_phase(glob_name, phase):
+            loc_name = get_loc_name(glob_name, phase)
+            assert(loc_name not in ref0s)
+            ref0s[loc_name] = sc.ref0s[glob_name]
     return ref0s
 
 
-def get_defect_refs(phase, pjrn):
+def get_defect_refs(phase, sc):
     defect_refs = {}
-    for key in pjrn.defect_refs:
-        if is_fname(key):
-            short_key = key.split(':')[-1]
-            defect_refs[short_key] = pjrn.defect_refs[key]
+    for glob_name in sc.defect_refs:
+        assert(is_fname(glob_name))
+        if name_is_in_phase(glob_name, phase):
+            loc_name = get_loc_name(glob_name, phase)
+            assert(loc_name not in defect_refs)
+            defect_refs[loc_name] = sc.defect_refs[glob_name]
     return defect_refs
 
 
-def is_fname(key):
-    return PJRNScaler._is_fname(key)
+def name_is_in_phase(name, phase):
+    return phase.pathname in name
 
 
-def is_gname(key):
-    return PJRNScaler._is_gname(key)
+def get_loc_name(name, phase):
+    return name.split(':')[-1].split('.')[-1]
 
 
-def is_vname(key):
-    return not is_fname(key) and not is_gname(key)
+def is_fname(name):
+    return PJRNScaler._is_fname(name)
 
 
-def set_refs(sys, pjrn):
+def is_gname(name):
+    return PJRNScaler._is_gname(name)
+
+
+def is_vname(name):
+    return not is_fname(name) and not is_gname(name)
+
+
+def set_refs(sys, sc):
     if isinstance(sys, dm.Phase):
-        set_phase_refs(sys, pjrn)
+        set_phase_refs(sys, sc)
     elif isinstance(sys, om.Group):
         for subsys in sys._loc_subsys_map:
-            set_refs(getattr(sys, subsys), pjrn)
+            set_refs(getattr(sys, subsys), sc)
 
 
-def set_phase_refs(phase, pjrn):
+def set_phase_refs(phase, sc):
     # Get states, ctrls for state
-    states = phase.state_options.keys()
-    ctrls = phase.control_options.keys()
+    states = phase_states(phase, sc)
+    ctrls = phase_ctrls(phase, sc)
 
     # Get refs, ref0s, defect_refs for phase
-    refs = get_refs(phase, pjrn)
-    ref0s = get_ref0s(phase, pjrn)
-    defect_refs = get_defect_refs(phase, pjrn)
+    refs = get_refs(phase, sc)
+    ref0s = get_ref0s(phase, sc)
+    defect_refs = get_defect_refs(phase, sc)
 
     # Set refs for...
     # Time
@@ -94,3 +102,19 @@ def set_phase_refs(phase, pjrn):
         phase.state_options[state].update(phase.user_state_options[state])
     for ctrl in ctrls:
         phase.control_options[ctrl].update(phase.user_control_options[ctrl])
+
+
+def phase_states(phase, sc):
+    return {get_loc_name(key, phase) for key in sc.refs if phase.pathname in key and is_state(key)}
+
+
+def phase_ctrls(phase, sc):
+    return {get_loc_name(key, phase) for key in sc.refs if phase.pathname in key and is_ctrl(key)}
+
+
+def is_state(name):
+    return PJRNScaler._is_state(name)
+
+
+def is_ctrl(name):
+    return PJRNScaler._is_ctrl(name)
