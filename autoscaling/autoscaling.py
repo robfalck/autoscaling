@@ -1,18 +1,21 @@
 import dymos as dm
 import openmdao.api as om
-from autoscaling.pjrn import PJRNScaler
+from autoscaling.autosc import AutoScaler
 
 
-def autoscale(prob, jac, lbs, ubs):
-    pjrn = PJRNScaler(jac, lbs, ubs)
-    set_refs(prob.model, pjrn)
+def autoscale(prob, jac, lbs, ubs, autosc_class):
+    import inspect
+    assert(inspect.isclass(autosc_class))
+    assert(issubclass(autosc_class, AutoScaler))
+    sc = autosc_class(jac, lbs, ubs)
+    set_refs(prob.model, sc)
     prob.setup()
 
 
 def get_refs(phase, sc):
     refs = {}
     for glob_name in sc.refs:
-        assert(is_vname(glob_name) or is_gname(glob_name))
+        assert(not is_fname(glob_name))
         if name_is_in_phase(glob_name, phase):
             loc_name = get_loc_name(glob_name, phase)
             assert(loc_name not in refs)
@@ -51,11 +54,11 @@ def get_loc_name(name, phase):
 
 
 def is_fname(name):
-    return PJRNScaler._is_fname(name)
+    return AutoScaler.is_defect_constraint(name)
 
 
 def is_gname(name):
-    return PJRNScaler._is_gname(name)
+    return AutoScaler.is_path_constraint(name)
 
 
 def is_vname(name):
@@ -84,8 +87,10 @@ def set_phase_refs(phase, sc):
     # Time
     if 't_initial' in refs:
         phase.user_time_options['initial_ref'] = refs['t_initial']
+        phase.user_time_options['initial_ref0'] = ref0s['t_initial']
     if 't_duration' in refs:
         phase.user_time_options['duration_ref'] = refs['t_duration']
+        phase.user_time_options['duration_ref0'] = ref0s['t_duration']
     # States, defects
     for state in states:
         phase.user_state_options[state]['ref'] = refs[state]
@@ -105,16 +110,8 @@ def set_phase_refs(phase, sc):
 
 
 def phase_states(phase, sc):
-    return {get_loc_name(key, phase) for key in sc.refs if phase.pathname in key and is_state(key)}
+    return {get_loc_name(key, phase) for key in sc.refs if phase.pathname in key and AutoScaler.is_state(key)}
 
 
 def phase_ctrls(phase, sc):
-    return {get_loc_name(key, phase) for key in sc.refs if phase.pathname in key and is_ctrl(key)}
-
-
-def is_state(name):
-    return PJRNScaler._is_state(name)
-
-
-def is_ctrl(name):
-    return PJRNScaler._is_ctrl(name)
+    return {get_loc_name(key, phase) for key in sc.refs if phase.pathname in key and AutoScaler.is_control(key)}

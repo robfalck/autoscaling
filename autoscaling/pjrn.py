@@ -1,9 +1,12 @@
-class PJRNScaler(object):
+from autoscaling.autosc import AutoScaler
+
+
+class PJRNScaler(AutoScaler):
     def __init__(self, jac, lbs, ubs):
         # Get full names of vars, defect cons, path cons
-        vnames = self._parse_vnames(jac)
-        fnames = self._parse_fnames(jac)
-        gnames = self._parse_gnames(jac)
+        vnames = self.parse_var_names(jac)
+        fnames = self.parse_defect_names(jac)
+        gnames = self.parse_constraint_names(jac)
 
         # Compute components of inverses of diagonal matrices Kv, Kf, Kg
         Kv_inv = self._compute_Kv_inv(lbs, ubs)
@@ -21,6 +24,7 @@ class PJRNScaler(object):
             self.defect_refs[name] = Kf_inv[name]
         for name in Kg_inv:
             self.refs[name] = Kg_inv[name]
+            self.ref0s[name] = 0
 
     @staticmethod
     def _compute_Kc_inv(jac, cnames, vnames, Kv_inv):
@@ -43,31 +47,3 @@ class PJRNScaler(object):
     @staticmethod
     def _compute_Kv_inv(lbs, ubs):
         return {v: ubs[v] - lbs[v] for v in ubs}
-
-    @staticmethod
-    def _is_fname(name):
-        return '.defects:' in name
-
-    @staticmethod
-    def _is_gname(name):
-        return '.path:' in name
-
-    @staticmethod
-    def _is_state(name):
-        return '.states:' in name
-
-    @staticmethod
-    def _is_ctrl(name):
-        return '.controls:' in name
-
-    @staticmethod
-    def _parse_fnames(jac):
-        return {of for of, _ in jac if PJRNScaler._is_fname(of)}
-
-    @staticmethod
-    def _parse_gnames(jac):
-        return {of for of, _ in jac if PJRNScaler._is_gname(of)}
-
-    @staticmethod
-    def _parse_vnames(jac):
-        return {wrt for _, wrt in jac}
