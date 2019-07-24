@@ -4,8 +4,6 @@ import openmdao.api as om
 import pickle
 from autoscaling.autoscaling import autoscale
 
-x_f = 100      # value for x_f; assumed to equal x_f from previous solve
-
 
 def main():
     # ============================
@@ -44,7 +42,7 @@ def main():
 
     prob['traj.phase0.t_initial'] = 0.0
     prob['traj.phase0.t_duration'] = 1.0
-    prob['traj.phase0.states:x'] = phase.interpolate(ys=[0, x_f], nodes='state_input')
+    prob['traj.phase0.states:x'] = phase.interpolate(ys=[0, 100], nodes='state_input')
     prob['traj.phase0.states:y'] = phase.interpolate(ys=[0, 1], nodes='state_input')
     prob['traj.phase0.states:v'] = phase.interpolate(ys=[0, 10], nodes='state_input')
     prob['traj.phase0.controls:th'] = phase.interpolate(ys=[5, 100.5], nodes='control_input')
