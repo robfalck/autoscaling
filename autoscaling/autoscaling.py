@@ -3,7 +3,7 @@ import openmdao.api as om
 from autoscaling.autosc import AutoScaler
 
 
-def autoscale(prob, jac, lbs, ubs, autosc_class):
+def autoscale(prob, autosc_class, jac, lbs=None, ubs=None):
     import inspect
     assert(inspect.isclass(autosc_class))
     assert(issubclass(autosc_class, AutoScaler))

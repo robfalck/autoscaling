@@ -48,11 +48,9 @@ def main():
     prob['traj.phase0.states:v'] = phase.interpolate(ys=[0, 10], nodes='state_input')
     prob['traj.phase0.controls:th'] = phase.interpolate(ys=[5, 100.5], nodes='control_input')
 
-    autoscale(prob, jac, lbs, ubs, PJRNScaler)
+    autoscale(prob, PJRNScaler, jac, lbs, ubs)
 
     prob.run_driver()
-
-    return phase
 
 
 if __name__ == '__main__':
