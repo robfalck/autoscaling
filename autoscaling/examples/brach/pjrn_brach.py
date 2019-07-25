@@ -1,9 +1,7 @@
-from brach import BrachODE
+from brach_ode import BrachODE
 import dymos as dm
 import openmdao.api as om
 import pickle
-from autoscaling.autoscaling import autoscale
-from autoscaling.pjrn import PJRNScaler
 
 
 def main():
@@ -48,9 +46,12 @@ def main():
     prob['traj.phase0.states:v'] = phase.interpolate(ys=[0, 10], nodes='state_input')
     prob['traj.phase0.controls:th'] = phase.interpolate(ys=[5, 100.5], nodes='control_input')
 
-    autoscale(prob, PJRNScaler, jac, lbs, ubs)
+    from autoscaling.api import pjrnscale
+    pjrnscale(prob, jac, lbs, ubs)
 
     prob.run_driver()
+
+    return prob
 
 
 if __name__ == '__main__':
