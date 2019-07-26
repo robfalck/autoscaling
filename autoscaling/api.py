@@ -125,6 +125,36 @@ class IsoScaler(object):
         for nm in fnames:
             self.defect_refs[nm] = Kf_inv[nm]
 
+    def list_ref_keys(self):
+        print('=======')
+        print('REFs')
+        print('=======')
+        for key in self.refs:
+            print(key)
+
+    def list_ref0_keys(self):
+        print('=======')
+        print('REF0s')
+        print('=======')
+        for key in self.ref0s:
+            print(key)
+
+    def list_defect_ref_keys(self):
+        print('=======')
+        print('DEFECT_REFs')
+        print('=======')
+        for key in self.defect_refs:
+            print(key)
+
+
+def isoscale(prob, jac, lbs, ubs):
+    sc = IsoScaler(jac, lbs, ubs)
+    set_refs(prob.model, sc)
+    prob.setup()
+    sc.list_ref_keys()
+    sc.list_ref0_keys()
+    sc.list_defect_ref_keys()
+
 
 def pjrnscale(prob, jac, lbs, ubs):
     sc = PJRNScaler(jac, lbs, ubs)
