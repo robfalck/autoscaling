@@ -22,10 +22,10 @@ def set_refs(sys, sc):
 
 
 def set_phase_refs(phase, sc):
-    # Get relevant times, states, ctrls
+    # Get relevant times, states, controls
     loc_times = phase_times(phase, sc)
     loc_states = phase_states(phase, sc)
-    loc_ctrls = phase_ctrls(phase, sc)
+    loc_controls = phase_controls(phase, sc)
 
     # Get refs, ref0s, defect_refs
     loc_refs = get_phase_refs(phase, sc)
@@ -47,7 +47,7 @@ def set_phase_refs(phase, sc):
         phase.user_state_options[st]['defect_ref'] = loc_defect_refs[st]
         phase.state_options[st].update(phase.user_state_options[st])
 
-    for ct in loc_ctrls:
+    for ct in loc_controls:
         phase.user_control_options[ct]['ref'] = loc_refs[ct]
         phase.user_control_options[ct]['ref0'] = loc_ref0s[ct]
         phase.control_options[ct].update(phase.user_control_options[ct])
@@ -84,18 +84,18 @@ def phase_states(phase, sc):
     return states
 
 
-def phase_ctrls(phase, sc):
+def phase_controls(phase, sc):
     """
     Gets set of local names corresponding to phase controls.
     """
-    ctrls = set()
+    controls = set()
     for nm in sc.refs:
         if phase.pathname in nm:
             if sc.is_control_name(nm):
                 loc_nm = sc.local_var_name(nm)
-                assert(loc_nm not in ctrls)
-                ctrls.add(loc_nm)
-    return ctrls
+                assert(loc_nm not in controls)
+                controls.add(loc_nm)
+    return controls
 
 
 def get_phase_refs(phase, sc):

@@ -5,18 +5,6 @@ class AutoScaler(object):
         self.ref0s = {}
         self.defect_refs = {}
 
-    def is_control_name(self, name):
-        return '.controls:' in name
-
-    def is_defect_name(self, name):
-        return '.defects:' in name
-
-    def is_path_constraint_name(self, name):
-        return '.path:' in name
-
-    def is_state_name(self, name):
-        return '.states:' in name
-
     def list_ref_keys(self):
         print('=======')
         print('REFs')
@@ -38,8 +26,26 @@ class AutoScaler(object):
         for key in self.defect_refs:
             print(key)
 
-    def local_defect_name(self, global_name):
+    @staticmethod
+    def is_control_name(name):
+        return '.controls:' in name
+
+    @staticmethod
+    def is_defect_name(name):
+        return '.defects:' in name
+
+    @staticmethod
+    def is_path_constraint_name(name):
+        return '.path:' in name
+
+    @staticmethod
+    def is_state_name(name):
+        return '.states:' in name
+
+    @staticmethod
+    def local_defect_name(global_name):
         return global_name.split(':')[-1]
 
-    def local_var_name(self, global_name):
+    @staticmethod
+    def local_var_name(global_name):
         return global_name.split(':')[-1].split('.')[-1]

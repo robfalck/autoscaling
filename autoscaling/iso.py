@@ -35,18 +35,20 @@ class IsoScaler(AutoScaler):
         for nm in fnames:
             self.defect_refs[nm] = Kf_inv[nm]
 
-    def _parse_vnames_from(self, jac):
+    @staticmethod
+    def _parse_vnames_from(jac):
         vnames = set()
         for of, wrt in jac:
-            if self.is_state_name(wrt):
+            if IsoScaler.is_state_name(wrt):
                 vnames.add(wrt)
-            elif self.is_control_name(wrt):
+            elif IsoScaler.is_control_name(wrt):
                 vnames.add(wrt)
         return vnames
 
-    def _parse_fnames_from(self, jac):
+    @staticmethod
+    def _parse_fnames_from(jac):
         fnames = set()
         for of, wrt in jac:
-            if self.is_defect_name(of):
+            if IsoScaler.is_defect_name(of):
                 fnames.add(of)
         return fnames

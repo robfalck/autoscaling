@@ -87,25 +87,28 @@ class PJRNScaler(AutoScaler):
             self.refs[nm] = Kg_inv[nm]
             self.ref0s[nm] = 0
 
-    def _parse_vnames_from(self, jac):
+    @staticmethod
+    def _parse_vnames_from(jac):
         vnames = set()
         for of, wrt in jac:
-            if self.is_state_name(wrt):
+            if PJRNScaler.is_state_name(wrt):
                 vnames.add(wrt)
-            elif self.is_control_name(wrt):
+            elif PJRNScaler.is_control_name(wrt):
                 vnames.add(wrt)
         return vnames
 
-    def _parse_fnames_from(self, jac):
+    @staticmethod
+    def _parse_fnames_from(jac):
         fnames = set()
         for of, wrt in jac:
-            if self.is_defect_name(of):
+            if PJRNScaler.is_defect_name(of):
                 fnames.add(of)
         return fnames
 
-    def _parse_gnames_from(self, jac):
+    @staticmethod
+    def _parse_gnames_from(jac):
         gnames = set()
         for of, wrt in jac:
-            if self.is_path_constraint_name(of):
+            if PJRNScaler.is_path_constraint_name(of):
                 gnames.add(of)
         return gnames
