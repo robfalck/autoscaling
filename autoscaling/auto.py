@@ -41,5 +41,5 @@ class AutoScaler(object):
     def local_defect_name(self, global_name):
         return global_name.split(':')[-1]
 
-    def local_nontime_var_name(self, global_name):
-        return global_name.split(':')[-1]
+    def local_var_name(self, global_name):
+        return global_name.split(':')[-1].split('.')[-1]

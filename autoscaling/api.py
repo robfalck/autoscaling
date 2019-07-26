@@ -77,8 +77,8 @@ def phase_states(phase, sc):
     states = set()
     for nm in sc.refs:
         if phase.pathname in nm:
-            if '.states:' in nm:
-                loc_nm = nm.split(':')[-1]
+            if sc.is_state_name(nm):
+                loc_nm = sc.local_var_name(nm)
                 assert(loc_nm not in states)
                 states.add(loc_nm)
     return states
@@ -91,8 +91,8 @@ def phase_ctrls(phase, sc):
     ctrls = set()
     for nm in sc.refs:
         if phase.pathname in nm:
-            if '.controls:' in nm:
-                loc_nm = nm.split(':')[-1]
+            if sc.is_control_name(nm):
+                loc_nm = sc.local_var_name(nm)
                 assert(loc_nm not in ctrls)
                 ctrls.add(loc_nm)
     return ctrls
@@ -102,7 +102,7 @@ def get_phase_refs(phase, sc):
     refs = {}
     for nm in sc.refs:
         if phase.pathname in nm:
-            loc_nm = nm.split(':')[-1].split('.')[-1]
+            loc_nm = sc.local_var_name(nm)
             assert(loc_nm not in refs)
             refs[loc_nm] = sc.refs[nm]
     return refs
@@ -112,7 +112,7 @@ def get_phase_ref0s(phase, sc):
     ref0s = {}
     for nm in sc.ref0s:
         if phase.pathname in nm:
-            loc_nm = nm.split(':')[-1].split('.')[-1]
+            loc_nm = sc.local_var_name(nm)
             assert(loc_nm not in ref0s)
             ref0s[loc_nm] = sc.ref0s[nm]
     return ref0s
@@ -122,7 +122,7 @@ def get_phase_defect_refs(phase, sc):
     defect_refs = {}
     for nm in sc.defect_refs:
         if phase.pathname in nm:
-            loc_nm = nm.split(':')[-1]
+            loc_nm = sc.local_var_name(nm)
             assert(loc_nm not in defect_refs)
             defect_refs[loc_nm] = sc.defect_refs[nm]
     return defect_refs

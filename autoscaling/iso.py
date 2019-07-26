@@ -21,7 +21,7 @@ class IsoScaler(AutoScaler):
             key = None
             loc_f = self.local_defect_name(f)
             for v in vnames:
-                loc_v = self.local_nontime_var_name(v)
+                loc_v = self.local_var_name(v)
                 if loc_v == loc_f:
                     key = v
                     break
