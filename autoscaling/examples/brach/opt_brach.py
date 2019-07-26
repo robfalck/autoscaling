@@ -2,22 +2,10 @@ from brach_ode import BrachODE
 import dymos as dm
 import openmdao.api as om
 import pickle
+from autoscaling.api import autoscale, PJRNScaler, IsoScaler
 
 
 def main():
-    # ============================
-    # Load in jac, lbs, ubs for testing
-    # ============================
-    with open('total_jac_info.pickle', 'rb') as file:
-        jac = pickle.load(file)
-    with open('lower_bounds_info.pickle', 'rb') as file:
-        lbs = pickle.load(file)
-    with open('upper_bounds_info.pickle', 'rb') as file:
-        ubs = pickle.load(file)
-
-    # =======================
-    # Scale problem and solve
-    # =======================
     prob = om.Problem()
     model = prob.model
 
@@ -46,10 +34,19 @@ def main():
     prob['traj.phase0.states:v'] = phase.interpolate(ys=[0, 10], nodes='state_input')
     prob['traj.phase0.controls:th'] = phase.interpolate(ys=[5, 100.5], nodes='control_input')
 
-    # from autoscaling.api import pjrnscale
-    # pjrnscale(prob, jac, lbs, ubs)
-    from autoscaling.api import isoscale
-    isoscale(prob, jac, lbs, ubs)
+    with open('total_jac_info.pickle', 'rb') as file:
+        jac = pickle.load(file)
+    with open('lower_bounds_info.pickle', 'rb') as file:
+        lbs = pickle.load(file)
+    with open('upper_bounds_info.pickle', 'rb') as file:
+        ubs = pickle.load(file)
+
+    sc = None
+    # sc = IsoScaler(jac, lbs, ubs)
+    # sc = PJRNScaler(jac, lbs, ubs)
+    # sc = CustomScaler()
+
+    autoscale(prob, autoscaler=sc)
 
     prob.run_driver()
 
