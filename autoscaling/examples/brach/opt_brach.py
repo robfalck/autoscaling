@@ -41,10 +41,9 @@ def main():
     with open('upper_bounds_info.pickle', 'rb') as file:
         ubs = pickle.load(file)
 
-    sc = None
+    # sc = None
     # sc = IsoScaler(jac, lbs, ubs)
-    # sc = PJRNScaler(jac, lbs, ubs)
-    # sc = CustomScaler()
+    sc = PJRNScaler(jac, lbs, ubs)
 
     autoscale(prob, autoscaler=sc)
 
