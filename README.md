@@ -1,1 +1,3 @@
-# Automatic Scaling API for Dymos and OpenMDAO
+# Autoscaling API Version 1.0
+
+An API for automated scaling of dynamically-constrained optimization problems in Dymos.
