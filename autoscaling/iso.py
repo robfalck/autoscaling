@@ -1,8 +1,35 @@
+"""Define IsoScaler class."""
+
 from .auto import AutoScaler
 
 
 class IsoScaler(AutoScaler):
+    """
+    Helper class for automatic scaling of dynamically-constrained optimization problems via the isoscaling (IS) method.
+
+    Attributes
+    ----------
+    refs : dict
+        Maps a variable's global name to its ref value.
+    ref0s : dict
+        Maps a variable's global name to its ref0 value.
+    defect_refs : dict
+        Maps a variable's defect's global name to its defect_ref value.
+    """
+
     def initialize(self, jac, lbs, ubs):
+        """
+        Initialize, using the given variable bounds and jacobian information.
+
+        Parameters
+        ----------
+        jac : dict
+            Jacobian information from which global variable, constraint names are parsed. Assumed to be compatible with the Dymos problem at hand.
+        lbs : dict
+            Maps a global variable (not a constraint) name to its lower bound.
+        ubs : dict
+            Maps a global variable (not a constraint) name to its upper bound.
+        """
         # Parse global names of states, (dynamic) controls,
         # and collocation defect constraints from total
         # jacobian dict keys...
@@ -35,6 +62,14 @@ class IsoScaler(AutoScaler):
 
     @staticmethod
     def _parse_vnames_from(jac):
+        """
+        Parse global variable names from given jacobian information.
+
+        Parameters
+        ----------
+        jac : dict
+            Jacobian information.
+        """
         vnames = set()
         for of, wrt in jac:
             if IsoScaler.is_state_name(wrt):
@@ -45,6 +80,14 @@ class IsoScaler(AutoScaler):
 
     @staticmethod
     def _parse_fnames_from(jac):
+        """
+        Parse global collocation defect constraint names from given jacobian information.
+
+        Parameters
+        ----------
+        jac : dict
+            Jacobian information.
+        """
         fnames = set()
         for of, wrt in jac:
             if IsoScaler.is_defect_name(of):

@@ -1,3 +1,5 @@
+"""Define the autoscale() method."""
+
 import dymos as dm
 import openmdao.api as om
 from autoscaling.auto import AutoScaler
@@ -6,31 +8,41 @@ from autoscaling.iso import IsoScaler
 
 
 def autoscale(prob, autoscaler):
+    """
+    Scale the given problem using the scaling data encapsulated by the given autoscaler helper object.
+
+    Parameters
+    ----------
+    prob : Problem
+        Dymos problem to be scaled. Should be single-phase and dynamically-constrained.
+    autoscaler : AutoScaler
+        Autoscaling helper object.
+    """
     if autoscaler is None:
         return
     assert(isinstance(autoscaler, AutoScaler))
-    set_refs(prob.model, autoscaler)
+    _set_refs(prob.model, autoscaler)
     prob.setup()
 
 
-def set_refs(sys, sc):
+def _set_refs(sys, sc):
     if isinstance(sys, dm.Phase):
-        set_phase_refs(sys, sc)
+        _set_phase_refs(sys, sc)
     elif isinstance(sys, om.Group):
         for subsys in sys._loc_subsys_map:
-            set_refs(getattr(sys, subsys), sc)
+            _set_refs(getattr(sys, subsys), sc)
 
 
-def set_phase_refs(phase, sc):
+def _set_phase_refs(phase, sc):
     # Get relevant times, states, controls
     loc_times = phase_times(phase, sc)
-    loc_states = phase_states(phase, sc)
-    loc_controls = phase_controls(phase, sc)
+    loc_states = _phase_states(phase, sc)
+    loc_controls = _phase_controls(phase, sc)
 
     # Get refs, ref0s, defect_refs
-    loc_refs = get_phase_refs(phase, sc)
-    loc_ref0s = get_phase_ref0s(phase, sc)
-    loc_defect_refs = get_phase_defect_refs(phase, sc)
+    loc_refs = _get_phase_refs(phase, sc)
+    loc_ref0s = _get_phase_ref0s(phase, sc)
+    loc_defect_refs = _get_phase_defect_refs(phase, sc)
 
     # Set refs, ref0s, defect_refs
     if 't_initial' in loc_times:
@@ -70,7 +82,7 @@ def phase_times(phase, sc):
     return times
 
 
-def phase_states(phase, sc):
+def _phase_states(phase, sc):
     """
     Gets set of local names corresponding to phase states.
     """
@@ -84,7 +96,7 @@ def phase_states(phase, sc):
     return states
 
 
-def phase_controls(phase, sc):
+def _phase_controls(phase, sc):
     """
     Gets set of local names corresponding to phase controls.
     """
@@ -98,7 +110,7 @@ def phase_controls(phase, sc):
     return controls
 
 
-def get_phase_refs(phase, sc):
+def _get_phase_refs(phase, sc):
     refs = {}
     for nm in sc.refs:
         if phase.pathname in nm:
@@ -108,7 +120,7 @@ def get_phase_refs(phase, sc):
     return refs
 
 
-def get_phase_ref0s(phase, sc):
+def _get_phase_ref0s(phase, sc):
     ref0s = {}
     for nm in sc.ref0s:
         if phase.pathname in nm:
@@ -118,7 +130,7 @@ def get_phase_ref0s(phase, sc):
     return ref0s
 
 
-def get_phase_defect_refs(phase, sc):
+def _get_phase_defect_refs(phase, sc):
     defect_refs = {}
     for nm in sc.defect_refs:
         if phase.pathname in nm:

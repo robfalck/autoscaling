@@ -1,37 +1,34 @@
+"""Define PJRNScaler class."""
+
 from .auto import AutoScaler
 
 
 class PJRNScaler(AutoScaler):
     """
-    Autoscaling helper class that, upon instantiation, utilizes
-    given total jacobian and bounds information to compute
-    reference values according to the Projected Jacobian Rows
-    Normalization (PJRN) autoscaling scheme.
+    Helper class for automatic scaling of dynamically-constrained optimization problems via the projected jacobian rows normalization (PJRN) method.
 
     Attributes
     ----------
     refs : dict
-        Variable and path constraint refs.
+        Maps a variable's global name to its ref value.
     ref0s : dict
-        Variable and path constraint ref0s.
+        Maps a variable's global name to its ref0 value.
     defect_refs : dict
-        Refs for collocation defect constraints.
+        Maps a variable's defect's global name to its defect_ref value.
     """
 
     def initialize(self, jac, lbs, ubs):
         """
-        Computes reference values according to Projected
-        Jacobian Rows Normalization (PJRN) scaling.
+        Initialize, using the given variable bounds and jacobian information.
 
         Parameters
         ----------
         jac : dict
-            Total jacobian information compatible with the
-            problem to be scaled.
+            Jacobian information from which global variable, constraint names are parsed. Must be compatible with the Dymos problem at hand.
         lbs : dict
-            Lower bounds information.
+            Maps a global variable (not a constraint) name to its lower bound.
         ubs : dict
-            Upper bounds information.
+            Maps a global variable (not a constraint) name to its upper bound.
         """
         # Parse global names of states, (dynamic) controls,
         # collocation defect constraints, and path constraints
@@ -87,6 +84,14 @@ class PJRNScaler(AutoScaler):
 
     @staticmethod
     def _parse_vnames_from(jac):
+        """
+        Parse global variable names from given jacobian information.
+
+        Parameters
+        ----------
+        jac : dict
+            Jacobian information.
+        """
         vnames = set()
         for of, wrt in jac:
             if PJRNScaler.is_state_name(wrt):
@@ -97,6 +102,14 @@ class PJRNScaler(AutoScaler):
 
     @staticmethod
     def _parse_fnames_from(jac):
+        """
+        Parse global collocation defect constraint names from given jacobian information.
+
+        Parameters
+        ----------
+        jac : dict
+            Jacobian information.
+        """
         fnames = set()
         for of, wrt in jac:
             if PJRNScaler.is_defect_name(of):
@@ -105,6 +118,14 @@ class PJRNScaler(AutoScaler):
 
     @staticmethod
     def _parse_gnames_from(jac):
+        """
+        Parse global path defect constraint names from given jacobian information.
+
+        Parameters
+        ----------
+        jac : dict
+            Jacobian information.
+        """
         gnames = set()
         for of, wrt in jac:
             if PJRNScaler.is_path_constraint_name(of):
