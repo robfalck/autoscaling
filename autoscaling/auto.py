@@ -1,5 +1,7 @@
 """Define the AutoScaler abstract base class, which defines a fundamental interface sufficient for an autoscaling helper class to work with autoscale()."""
 
+from __future__ import print_function
+
 from abc import ABC
 
 
