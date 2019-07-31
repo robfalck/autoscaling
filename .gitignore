@@ -1,4 +1,4 @@
-
+autoscaling.egg-info/*
 *.out
 *.png
 *.pkl
