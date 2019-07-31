@@ -1,9 +1,11 @@
 
 class AutoScaler(object):
-    def __init__(self):
+    def __init__(self, *argv, **kwargs):
         self.refs = {}
         self.ref0s = {}
         self.defect_refs = {}
+
+        self.initialize(*argv, **kwargs)
 
     def list_ref_keys(self):
         print('=======')

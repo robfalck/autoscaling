@@ -18,7 +18,7 @@ class PJRNScaler(AutoScaler):
         Refs for collocation defect constraints.
     """
 
-    def __init__(self, jac, lbs, ubs):
+    def initialize(self, jac, lbs, ubs):
         """
         Computes reference values according to Projected
         Jacobian Rows Normalization (PJRN) scaling.
@@ -33,8 +33,6 @@ class PJRNScaler(AutoScaler):
         ubs : dict
             Upper bounds information.
         """
-        super(PJRNScaler, self).__init__()
-
         # Parse global names of states, (dynamic) controls,
         # collocation defect constraints, and path constraints
         # from total jacobian dict keys...

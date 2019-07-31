@@ -2,9 +2,7 @@ from .auto import AutoScaler
 
 
 class IsoScaler(AutoScaler):
-    def __init__(self, jac, lbs, ubs):
-        super(IsoScaler, self).__init__()
-
+    def initialize(self, jac, lbs, ubs):
         # Parse global names of states, (dynamic) controls,
         # and collocation defect constraints from total
         # jacobian dict keys...
