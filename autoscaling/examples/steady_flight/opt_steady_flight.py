@@ -3,7 +3,7 @@ import openmdao.api as om
 import pickle
 from aircraft_ode import AircraftODE
 from dymos.utils.lgl import lgl
-from autoscaling.api import autoscale, AutoScaler, IsoScaler, PJRNScaler
+from autoscaling.api import autoscale, IsoScaler, PJRNScaler
 
 
 def main():

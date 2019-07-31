@@ -1,6 +1,6 @@
 """Define PJRNScaler class."""
 
-from .auto import AutoScaler
+from autoscaling.core.autoscaler import AutoScaler
 
 
 class PJRNScaler(AutoScaler):

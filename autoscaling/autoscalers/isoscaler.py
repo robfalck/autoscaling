@@ -1,6 +1,6 @@
 """Define IsoScaler class."""
 
-from .auto import AutoScaler
+from autoscaling.core.autoscaler import AutoScaler
 
 
 class IsoScaler(AutoScaler):
