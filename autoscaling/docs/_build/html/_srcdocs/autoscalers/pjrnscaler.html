@@ -1,0 +1,154 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>autoscaling.autoscalers.pjrnscaler &#8212; Autoscaling API 1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="autoscaling.core" href="../core.html" />
+    <link rel="prev" title="autoscaling.autoscalers.isoscaler" href="isoscaler.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-autoscaling.autoscalers.pjrnscaler">
+<span id="autoscaling-autoscalers-pjrnscaler"></span><h1>autoscaling.autoscalers.pjrnscaler<a class="headerlink" href="#module-autoscaling.autoscalers.pjrnscaler" title="Permalink to this headline">¶</a></h1>
+<p>Define PJRNScaler class.</p>
+<dl class="class">
+<dt id="autoscaling.autoscalers.pjrnscaler.PJRNScaler">
+<em class="property">class </em><code class="descclassname">autoscaling.autoscalers.pjrnscaler.</code><code class="descname">PJRNScaler</code><span class="sig-paren">(</span><em>*argv</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#autoscaling.autoscalers.pjrnscaler.PJRNScaler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class for automatic scaling of dynamically-constrained optimization problems via the projected jacobian rows normalization (PJRN) method.</p>
+<dl class="attribute">
+<dt id="autoscaling.autoscalers.pjrnscaler.PJRNScaler.refs">
+<code class="descname">refs</code><a class="headerlink" href="#autoscaling.autoscalers.pjrnscaler.PJRNScaler.refs" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – Maps a variable’s global name to its ref value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="autoscaling.autoscalers.pjrnscaler.PJRNScaler.ref0s">
+<code class="descname">ref0s</code><a class="headerlink" href="#autoscaling.autoscalers.pjrnscaler.PJRNScaler.ref0s" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – Maps a variable’s global name to its ref0 value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="autoscaling.autoscalers.pjrnscaler.PJRNScaler.defect_refs">
+<code class="descname">defect_refs</code><a class="headerlink" href="#autoscaling.autoscalers.pjrnscaler.PJRNScaler.defect_refs" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – Maps a variable’s defect’s global name to its defect_ref value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="autoscaling.autoscalers.pjrnscaler.PJRNScaler.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><em>jac</em>, <em>lbs</em>, <em>ubs</em><span class="sig-paren">)</span><a class="headerlink" href="#autoscaling.autoscalers.pjrnscaler.PJRNScaler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize, using the given variable bounds and jacobian information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>jac</strong> (<em>dict</em>) – Jacobian information from which global variable, constraint names are parsed. Must be compatible with the Dymos problem at hand.</li>
+<li><strong>lbs</strong> (<em>dict</em>) – Maps a global variable (not a constraint) name to its lower bound.</li>
+<li><strong>ubs</strong> (<em>dict</em>) – Maps a global variable (not a constraint) name to its upper bound.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Autoscaling API</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../autoscalers.html">autoscaling.autoscalers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core.html">autoscaling.core</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../autoscalers.html">autoscaling.autoscalers</a><ul>
+      <li>Previous: <a href="isoscaler.html" title="previous chapter">autoscaling.autoscalers.isoscaler</a></li>
+      <li>Next: <a href="../core.html" title="next chapter">autoscaling.core</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Harvey Weyandt.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/_srcdocs/autoscalers/pjrnscaler.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
