@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Autoscaling API for Dymos and OpenMDAO documentation build configuration file, created by
-# sphinx-quickstart on Mon Aug  5 16:25:22 2019.
+# Autoscaling API documentation build configuration file, created by
+# sphinx-quickstart on Tue Aug  6 15:16:23 2019.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -17,9 +17,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- General configuration ------------------------------------------------
@@ -31,8 +31,7 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.githubpages']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -47,7 +46,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Autoscaling API for Dymos and OpenMDAO'
+project = 'Autoscaling API'
 copyright = '2019, Harvey Weyandt'
 author = 'Harvey Weyandt'
 
@@ -116,7 +115,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'AutoscalingAPIforDymosandOpenMDAOdoc'
+htmlhelp_basename = 'AutoscalingAPIdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -143,7 +142,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'AutoscalingAPIforDymosandOpenMDAO.tex', 'Autoscaling API for Dymos and OpenMDAO Documentation',
+    (master_doc, 'AutoscalingAPI.tex', 'Autoscaling API Documentation',
      'Harvey Weyandt', 'manual'),
 ]
 
@@ -153,7 +152,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'autoscalingapifordymosandopenmdao', 'Autoscaling API for Dymos and OpenMDAO Documentation',
+    (master_doc, 'autoscalingapi', 'Autoscaling API Documentation',
      [author], 1)
 ]
 
@@ -164,10 +163,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AutoscalingAPIforDymosandOpenMDAO', 'Autoscaling API for Dymos and OpenMDAO Documentation',
-     author, 'AutoscalingAPIforDymosandOpenMDAO', 'One line description of project.',
+    (master_doc, 'AutoscalingAPI', 'Autoscaling API Documentation',
+     author, 'AutoscalingAPI', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
