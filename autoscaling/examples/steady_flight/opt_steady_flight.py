@@ -83,9 +83,6 @@ def main():
 
     prob.run_driver()
 
-    # with open('total_jac_info.pickle', 'wb') as file:
-    #     pickle.dump(prob.compute_totals(), file, protocol=pickle.HIGHEST_PROTOCOL)
-
     return prob
 
 
