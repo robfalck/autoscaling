@@ -49,7 +49,7 @@ def main():
 
     prob.run_driver()
 
-    return prob
+    return prob, sc
 
 
 if __name__ == '__main__':

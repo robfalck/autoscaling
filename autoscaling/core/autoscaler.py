@@ -36,6 +36,56 @@ class AutoScaler(ABC):
 
         self.initialize(*argv, **kwargs)
 
+    def list_all_refs(self):
+        """
+        Print the refs, ref0s, and defect_refs reference value dictionaries in a more readable format.
+        """
+        self.list_refs()
+        self.list_ref0s()
+        self.list_defect_refs()
+
+    def list_refs(self):
+        """
+        Print the refs reference value dictionary in a more readable format.
+
+        Each dict entry is printed as two rows of the form
+            [key]
+            => [value]
+        where [key] is the key and [value] is the value at that key.
+        """
+        print('----\nREFs\n----')
+        self._print_dict(self.refs)
+
+    def list_ref0s(self):
+        """
+        Print the ref0s reference value dictionary in a more readable format.
+
+        Each dict entry is printed as two rows of the form
+            [key]
+            => [value]
+        where [key] is the key and [value] is the value at that key.
+        """
+        print('-----\nREF0s\n-----')
+        self._print_dict(self.ref0s)
+
+    def list_defect_refs(self):
+        """
+        Print the defect_refs reference value dictionary in a more readable format.
+
+        Each dict entry is printed as two rows of the form
+            [key]
+            => [value]
+        where [key] is the key and [value] is the value at that key.
+        """
+        print('-----------\nDEFECT_REFs\n-----------')
+        self._print_dict(self.defect_refs)
+
+    @staticmethod
+    def _print_dict(dict_to_print):
+        for key in dict_to_print:
+            print('{0}\n=>\t{1}'.format(key, dict_to_print[key]))
+        print()
+
     def list_ref_keys(self):
         """
         Print the keys of the refs dict attribute, one per line.
