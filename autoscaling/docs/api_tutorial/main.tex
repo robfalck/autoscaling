@@ -1,0 +1,251 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{listings}
+\usepackage{color}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\lstset{language=Python}
+\definecolor{mygray}{rgb}{0.9,0.9,0.9}
+
+\title{Autoscaling API Tutorial}
+\author{Harvey Weyandt}
+\date{August 2019}
+
+\begin{document}
+
+\maketitle
+\section*{Introduction}
+The purpose of this document is provide a basic user guide for the Autoscaling API V1.0. In it, we will describe how to use the API, how to implement custom autoscaling schemes to work with the API, and the critical aspects of the API design and implementation. The implementation details of the isoscaling (IS) and projected jacobian rows normalization (PJRN) autoscaling techniques, as defined in Sagliano et al (2017), are also given.
+
+\section{Using the API: A Three-Step Process}
+Using the API to autoscale a \texttt{Problem} instance is generally a three-step process:
+\begin{enumerate}
+    \item \textbf{IMPORT} the \texttt{autoscale()} function and other desired API components from the package \verb|autoscaling.api|. If IS or PJRN is desired, import the \texttt{IsoScaler} or \texttt{PJRNScaler} helper classes, respectively.
+    \item \textbf{CONFIGURE} autoscaling by instantiating an autoscaling helper class, such as \texttt{IsoScaler} or \texttt{PJRNScaler}. Depending on the helper class, this may require preloading some data, such as total jacobian information or bounds information.
+    \item \textbf{AUTOSCALE} the \texttt{Problem} instance by passing it, along with the autoscaling helper object, into \texttt{autoscale()}, \textit{immediately before} the call to \texttt{run\_driver()}.
+\end{enumerate}
+Listing~\ref{lst:use_ex1} shows how we might apply this process to an example in which we are trying to scale a problem with PJRN.
+
+\begin{lstlisting}[backgroundcolor=\color{mygray}, label={lst:use_ex1}, caption=General example of autoscaling a problem with PJRN]
+# IMPORT autoscale() and PJRNScaler helper class
+from autoscaling.api import autoscale, PJRNScaler
+...
+...
+import openmdao.api as om
+prob = om.Problem()
+...
+...
+prob.setup()
+...
+...
+# CONFIGURE PJRN autoscaling helper object
+with open('total_jac.pickle', 'rb') as file:
+    total_jac = pickle.load(file)
+with open('lower_bounds.pickle', 'rb') as file:
+    lower_bounds = pickle.load(file)
+with open('upper_bounds.pickle', 'rb') as file:
+    upper_bounds = pickle.load(file)
+autoscaler = PJRNScaler(jac, lbs, ubs)
+
+# AUTOSCALE prob with PJRN autoscaling helper
+autoscale(prob, autoscaler=autoscaler)
+
+prob.run_driver()
+\end{lstlisting}
+
+\subsection*{Example: Autoscaling the "bad" brachistochrone problem with PJRN}
+blah
+
+\section{Extending the API: The \texttt{AutoScaler} Base Class}
+To implement a custom autoscaling method that is compatible with the API, one must simply create an autoscaling helper class that inherits from the API's \texttt{AutoScaler} abstract base class. Proper inheritance from \texttt{AutoScaler} is the only hard requirement for an autoscaling helper class to be compatible with the \texttt{autoscale()} method. \\
+
+\noindent
+There are two components to the fundamental autoscaling helper interface provided by \texttt{AutoScaler} that must be defined upon inheritance:
+\begin{enumerate}
+    \item \textbf{Reference value dictionaries} (\texttt{refs}, \texttt{ref0s}, \texttt{defect\_refs}) \\
+    \texttt{AutoScaler} always initializes three empty \texttt{dict}s upon construction: \texttt{refs}, \texttt{ref0s}, and \texttt{defect\_refs}. These are to be defined by the user so that they map \textit{global} (a.k.a. absolute) input/output names to their appropriate corresponding \texttt{ref}s, \texttt{ref0}s, and \texttt{defect\_ref}s, respectively. (To be clear, global names are the kind that appear, for example, in the key pairs of the total jacobian obtained by a call to \verb|compute_totals()|.) 
+    \item \textbf{Initialization method} (\texttt{initialize()}) \\
+    While it is not a hard requirement to explicitly specify anywhere the reference value dictionaries, an error \textit{will} occur if you try to derive from \texttt{AutoScaler} without first defining the \texttt{initialize()} attribute. The purpose of this method is to perform all initialization and configuration actions necessary for the helper, such as actually setting the reference value dictionaries according to the autoscaling method being implemented. As such, the method can be defined with any number of parameters, corresponding to the data required to configure the autoscaling helper.
+\end{enumerate}
+In short, the \texttt{autoscale()} method requires that its autoscaler helper argument define reference value dictionaries, which can be appropriately defined by deriving from \texttt{AutoScaler} and defining the \texttt{initialize()} attribute to populate its \texttt{refs}, \texttt{ref0s}, and \texttt{defect\_refs} attributes.
+
+[TODO: Rewrite, in light of the above interpretation.]
+
+\subsection*{Example: Implementing "variables only" autoscaling}
+blah
+
+\section{API Design and Implementation Details}
+\subsection*{The \texttt{autoscale()} function}
+
+All of the actual autoscaling of a given \texttt{Problem} object is done through the API's \texttt{autoscale()} function. \\
+
+\noindent
+\textbf{Remark:} Passing \texttt{None} in through the \texttt{autoscaler} keyword argument is equivalent to using no autoscaling; nothing is done to the problem.
+
+\subsection*{The \texttt{AutoScaler} abstract base class}
+blah
+
+\subsection*{Isoscaling: Definition and the \texttt{IsoScaler} helper class}
+Let $\textbf{V}$ be the set of \textit{discretized state variables}, i.e. the set of state variables that make up the NLP problem generated from the OCP via the given collocation method. Let $\textbf{F}$ then be the set of collocation defect constraint variables generated from the OCP dynamic constraints. \\
+
+\noindent
+What are the sizes of $\textbf{V}$ and $\textbf{F}$, exactly? \\
+
+\noindent
+Since our approach here is application-oriented, for our purposes it is most instructive to think of the discretized state variable set $\textbf{V}$ as a \textit{dictionary}---in the Python sense---mapping a variable's \textit{identifier} or \textit{name string} $v$ to its \textit{value}, which we will denote using Python's index notation by $\textbf{V}[v]$. We will think of similar sets in the same way; for instance, the defect set $\textbf{F}$ will be thought of henceforth as a dictionary mapping a defect's identifier/name string $f$ to its value $\textbf{F}[f]$. \\
+
+\noindent
+It is important to note that $\textbf{F}$... \\
+
+\hline
+\noindent
+\begin{definition}
+\textbf{Isoscaling} (IS) is an affine scaling scheme, applicable to OCPs transcribed via a collocation method, in which the defects are scaled in the same manner as their corresponding discretized state variables, but with no shift:
+\begin{align*}
+    \hat{\textbf{V}}[v] &\equiv \textbf{a}[v] \textbf{V}[v] + \textbf{b}[v] \\
+    \hat{\textbf{F}}[f] &\equiv \textbf{a}_\textbf{F}[f] \textbf{F}[f]
+\end{align*}
+for all discretized variable identifiers $v$ and defect identifiers $f$, where $\textbf{a}$ is the set of discretized state multipliers defined such that
+\begin{align*}
+    \textbf{a}[v] &= \frac{1}{v^U - v^L}
+\end{align*}
+where $v^U,v^L$ denote the upper and lower bounds, respectively, for the variable identified by $v$; $\textbf{b}$ is the set of discretized state shifts defined such that
+\begin{align*}
+    \textbf{b}[v] &= -\frac{v^L}{v^U - v^L}
+\end{align*}
+and $\textbf{a}_\textbf{F}$ is the subset of $\textbf{a}$ defined such that
+\begin{align*}
+    \textbf{a}_\textbf{F}[f] &= \textbf{a}[s(f)]
+\end{align*}
+where $s(f)$ is the identifier for the discretized state variable associated with the defect identified by $f$. Note that $\textbf{a}_\textbf{F}$ is a \textit{subset}, generally, because discretized states corresponding to OCP \textit{controls} do not have corresponding defects.
+\end{definition}
+
+\hline
+\noindent
+(See Sagliano et al (2017) for an equivalent definition using matrices and vectors instead of sets thought of in terms of Python dictionaries.) \\
+
+\noindent
+How exactly do we get \texttt{ref}s, \texttt{ref0}s, and \texttt{defect\_ref}s from this definition? \\
+
+\noindent
+Let $v$ be a discretized state variable identifier. The \texttt{ref} value for $v$, given by $\texttt{refs}[v]$, is by definition the value of $v$ that scales to 1. Thus
+\begin{align*}
+    \texttt{refs}[v] &= \frac{1 - \textbf{b}[v]}{\textbf{a}[v]} = v^U
+\end{align*}
+The \texttt{ref0} value for $v$, given by $\texttt{ref0s}[v]$, is by definition the value of $v$ that scales to 0, so
+\begin{align*}
+    \texttt{ref0s}[v] &= -\frac{\textbf{b}[v]}{\textbf{a}[v]} = v^L
+\end{align*}
+Let $f$ be a defect constraint variable identifier. The \texttt{defect\_ref} value for $f$, given by $\texttt{defect\_refs}[f]$, is by definition the value of $f$ that scales to 1, so
+\begin{align*}
+    \texttt{defect\_refs}[f] &= \frac{1}{\textbf{a}_\textbf{F}[f]} \\
+    &= \frac{1}{\textbf{a}[s(f)]} \\
+    &= s(f)^U - s(f)^L
+\end{align*}
+These are precisely the definitions that \texttt{IsoScaler} helper class instances use to populate their \texttt{refs}, \texttt{ref0s}, and \texttt{defect\_refs} dictionaries.
+
+[TODO: Add stuff about IsoScaler helper class]
+
+\subsection*{PJRN: Definition and the \texttt{PJRNScaler} helper class}
+
+Sagliano et al (2017) uses matrices and vectors to define the projected jacobian rows normalization (PJRN) scaling technique essentially as follows: \\
+
+\hline
+\noindent
+Let $\textbf{V},\textbf{F},\textbf{G}$ be the vector of discretized states, the vector of defect constraint variables, and the vector of path constraint variables, respectively. Their scaled counterparts $\hat{\textbf{V}},\hat{\textbf{F}},\hat{\textbf{G}}$ under \textbf{projected jacobian rows normalization} (PJRN) are given by
+\begin{align*}
+    \hat{\textbf{V}} &= \text{K}_\textbf{V} \textbf{V} + \text{b} \\
+    \hat{\textbf{F}} &= \text{K}_\textbf{F} \textbf{F} \\
+    \hat{\textbf{G}} &= \text{K}_\textbf{G} \textbf{G}
+\end{align*}
+where $\text{K}_\textbf{V}, \text{b}$ are defined as in isoscaling, $\text{K}_\textbf{F}$ is an $n_sn \times n_sn$ diagonal matrix whose diagonal entries are given by
+\begin{align*}
+    \text{ent}_{i,i} \text{K}_\textbf{F} = \frac{1}{|\nabla \textbf{F} \cdot \text{K}_\textbf{V}^{-1}|_i}
+\end{align*}
+and $\text{K}_\textbf{G}$ is an $n_gn \times n_gn$ diagonal matrix whose diagonal entries are given by
+\begin{align*}
+    \text{ent}_{i,i} \text{K}_\textbf{G} = \frac{1}{|\nabla \textbf{G} \cdot \text{K}_\textbf{V}^{-1}|_i}
+\end{align*}
+The notation $|\cdot|_i$ is understood to mean the norm of row $i$:
+\begin{align*}
+    |\cdot|_i \equiv ||\text{row}_i(\cdot)||
+\end{align*}
+\hline
+
+\noindent
+How do these equations translate into OpenMDAO code? Specifically, how are reference values to be computed? \\
+
+\noindent
+Since the $\text{K}$ matrices are diagonal, we can write the scaling equations as
+\begin{align*}
+    \hat{\textbf{V}}_i &= \text{ent}_{i,i} \text{K}_\textbf{V} \cdot \textbf{V}_i + \text{b}_i & (i = 1,\dots,N) \\
+    \hat{\textbf{F}}_i &= \text{ent}_{i,i} \text{K}_\textbf{F} \cdot \textbf{F}_i & (i = 1,\dots,n_sn)\\
+    \hat{\textbf{G}}_i &= \text{ent}_{i,i} \text{K}_\textbf{G} \cdot \textbf{G}_i & (i = 1,\dots,n_gn)
+\end{align*}
+From these it is easier to derive expressions for the desired reference values. \\
+
+\noindent
+The reference values for the discretized state variables \textbf{V} are the same as in isoscaling; what's different about this method is what happens to the constraints. \\
+
+\noindent
+Let $f$ be a defect constraint variable identifier, and let $i = i(f)$ be the index of $\textbf{F}$ corresponding to the value of $f$. By definition, the \texttt{defect\_ref} for $f$ is the value of $f$ that scales to 1. Thus, if the \texttt{defect\_ref} for $f$ is given by $\texttt{defect\_ref}(f)$, then
+\begin{align*}
+    1 &= \text{ent}_{i,i} \text{K}_\textbf{F} \cdot \texttt{defect\_ref}(f)
+\end{align*}
+This can be solved for $\texttt{defect\_ref}(f)$:
+\begin{align*}
+    \texttt{defect\_ref}(f) &= \frac{1}{\text{ent}_{i,i} \text{K}_\textbf{F}} \\
+    &= |\nabla \textbf{F} \cdot \text{K}_\textbf{V}^{-1}|_i \\
+    &= ||\text{row}_i(\nabla \textbf{F} \cdot \text{K}_\textbf{V}^{-1})|| \\
+    &= ||\text{row}_i \nabla \textbf{F} \cdot \text{K}_\textbf{V}^{-1}|| \\
+    &= ||\text{row}_i \frac{\partial \textbf{F}}{\partial \textbf{V}} \cdot \text{K}_\textbf{V}^{-1}|| \\
+    &= ||\frac{\partial \textbf{F}_i}{\partial \textbf{V}} \cdot \text{K}_\textbf{V}^{-1}|| \\
+    &= ||\Big[ \frac{\partial \textbf{F}_i}{\partial \textbf{V}_j} \cdot \text{ent}_{j,j} \text{K}_\textbf{V}^{-1} \Big]_{j=1,\dots,N}|| \\
+    &= ||\Big[ \frac{\partial \textbf{F}_i}{\partial \textbf{V}_j} \cdot \text{rng}(\textbf{V}_j) \Big]_{j=1,\dots,N}|| \\
+    &= \Big\{ \sum_{\text{v} \in \textbf{V}} \Big( \frac{\partial \textbf{F}_i}{\partial \text{v}} \cdot \text{rng}(\text{v}) \Big)^2 \Big\}^{1/2} \\
+    &= \Big\{ \sum_{\text{var}}\sum_{\text{node}} \Big( \frac{\partial \textbf{F}_i}{\partial \text{v}(\text{var},\text{node})} \cdot \text{rng}(\text{var}) \Big)^2 \Big\}^{1/2} \\
+    &= \Big\{ \sum_{\text{var}} \Big[ \text{rng}^2(\text{var}) \sum_{\text{node}} \Big( \frac{\partial \textbf{F}_i}{\partial \text{v}(\text{var},\text{node})} \Big)^2 \Big] \Big\}^{1/2} \\
+    &= \Big\{ \sum_{\text{var}} \Big[ \text{rng}^2(\text{var}) \sum_{\text{node}} \Big( \texttt{Jac[fvar,var][fnode][node]} \Big)^2 \Big] \Big\}^{1/2}
+\end{align*}
+where \texttt{rng} denotes the range (max minus min) of the argument; \texttt{Jac} is the dictionary of total jacobian information---as can be obtained from \texttt{compute\_totals()}; \texttt{var} sums over the identifiers of the \textit{continuous} problem inputs; \texttt{node} sums over the particular node indices for each \texttt{var}; \texttt{fvar} is the identifier of the continuous problem state to which the defect $f$ corresponds; and \texttt{fnode} is the particular node index of $f$. It is precisely this equation that manifests itself in the \texttt{PJRNScaler} helper class definition. \\
+This same derivation can be used for the \texttt{ref} values of the path constraints. Let $g$ be a path constraint variable identifier, and let $i = i(g)$ be the index of $\textbf{G}$ corresponding to the value of $g$. Then
+\begin{align*}
+    \texttt{ref}(g) &= \Big\{ \sum_{\text{var}} \Big[ \text{rng}^2(\text{var}) \sum_{\text{node}} \Big( \texttt{Jac[gvar,var][gnode][node]} \Big)^2 \Big] \Big\}^{1/2}
+\end{align*}
+Note that $\texttt{ref0}(g) = 0$ for all $g$, since $\textbf{G}$ is scaled \textit{linearly}. \\
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
