@@ -2,12 +2,7 @@ import openmdao.api as om
 import dymos as dm
 import numpy as np
 
-@dm.declare_time(units='s')
-@dm.declare_state('x', rate_source='xdot', units='m')
-@dm.declare_state('y', rate_source='ydot', units='m')
-@dm.declare_state('v', rate_source='vdot', units='m/s', targets='v')
-@dm.declare_parameter('th', units='rad', targets='th')
-@dm.declare_parameter('g', units='m/s**2', targets='g')
+
 class BrachODE(om.ExplicitComponent):
     def initialize(self):
         self.options.declare('num_nodes', types=int)

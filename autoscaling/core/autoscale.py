@@ -20,16 +20,69 @@ def autoscale(prob, autoscaler):
     if autoscaler is None:
         return
     assert(isinstance(autoscaler, AutoScaler))
+    inputs, outputs = _get_vals(prob)
     _set_refs(prob.model, autoscaler)
     prob.setup()
+    _set_vals(prob, inputs, outputs)
 
 
-def _set_refs(sys, sc):
+def _get_vals(prob):
+    """
+    Save the value of all inputs and outputs so they can be restored after the additional setup.
+
+    Parameters
+    ----------
+    prob : Problem
+        The OpenMDAO problem instance whose values are to be returned.
+
+    Returns
+    -------
+    inputs : dict
+        A dictionary keyed by absolute path mapping to the values of all inputs in the problem.
+    outputs : dict
+        A dictionary keyed by absolute path mapping to the values of all outputs in the problem.
+    """
+    inputs = prob.model.list_inputs(prom_name=True, out_stream=None)
+    outputs = prob.model.list_outputs(prom_name=True, out_stream=None)
+    return inputs, outputs
+
+
+def _set_vals(prob, inputs, outputs):
+    """
+    Set the values of all inputs and outputs in the model
+
+    Parameters
+    ----------
+    prob : dict
+        The probem instance to which the values are to be set.
+    inputs : dict
+        A dictionary keyed by absolute path mapping to the values of all inputs in the problem.
+    outputs : dict
+        A dictionary keyed by absolute path mapping to the values of all outputs in the problem.
+    """
+    for input_name, options in inputs:
+        prob.set_val(input_name, options['value'])
+    for output_name, options in outputs:
+        prob.set_val(output_name, options['value'])
+
+
+def _set_refs(sys, autoscaler):
+    """
+    Set the scaling reference values for the given system using the given autoscaler
+
+    Parameters
+    ----------
+    sys : om.System
+        The system whose reference scaling values are to be set.
+    autoscaler : AutoScaler
+        The Autoscaler used to computed the reference scaling values.
+
+    """
     if isinstance(sys, dm.Phase):
-        _set_phase_refs(sys, sc)
+        _set_phase_refs(sys, autoscaler)
     elif isinstance(sys, om.Group):
         for subsys in sys._loc_subsys_map:
-            _set_refs(getattr(sys, subsys), sc)
+            _set_refs(getattr(sys, subsys), autoscaler)
 
 
 def _set_phase_refs(phase, sc):

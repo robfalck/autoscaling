@@ -1,6 +1,7 @@
 """Define PJRNScaler class."""
 
-from autoscaling.core.autoscaler import AutoScaler
+from ..core.autoscaler import AutoScaler
+from ..core.utils import get_jac_and_bounds
 
 
 class PJRNScaler(AutoScaler):
@@ -17,7 +18,7 @@ class PJRNScaler(AutoScaler):
         Maps a variable's defect's global name to its defect_ref value.
     """
 
-    def initialize(self, jac, lbs, ubs):
+    def initialize(self, prob):
         """
         Initialize, using the given variable bounds and jacobian information.
 
@@ -30,6 +31,8 @@ class PJRNScaler(AutoScaler):
         ubs : dict
             Maps a global variable (not a constraint) name to its upper bound.
         """
+        jac, lbs, ubs = get_jac_and_bounds(prob)
+
         # Parse global names of states, (dynamic) controls,
         # collocation defect constraints, and path constraints
         # from total jacobian dict keys...
